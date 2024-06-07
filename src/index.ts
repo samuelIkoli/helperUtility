@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   if (err.type === "entity.parse.failed") {
-    return res.status(500).json({
+    return res.status(400).json({
       status: "error",
       message: "Bad request",
     });
