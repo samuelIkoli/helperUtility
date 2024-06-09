@@ -6,6 +6,12 @@ import express, {
 } from "express";
 import { knex } from "../knexfile";
 import { fetchHelper } from "../utils/helpers";
+import {
+  createAid,
+  isCreateAid,
+  updateAid,
+  isUpdateteAid,
+} from "../interfaces/helpers";
 
 export const ping = (req: Request, res: Response) => {
   return res.send("Pinging is working");
@@ -55,6 +61,11 @@ export const getHelper: RequestHandler = async (
 ) => {
   try {
     const { slug } = req.params;
+    if (!slug || typeof slug !== "string" || slug == ":slug") {
+      return res.status(400).json({
+        error: "You didn't pass in a slug or slug is not of type string",
+      });
+    }
     const helper = await fetchHelper(slug);
     if (!helper.length) {
       return res.status(404).json({ error: "Resource not found" });
@@ -74,6 +85,11 @@ export const getHelperByLanguage: RequestHandler = async (
 ) => {
   try {
     let { slug, language_code } = req.params;
+    if (typeof slug !== "string" || typeof language_code !== "string") {
+      return res.status(400).json({
+        error: "Both slug and language code must be of type string",
+      });
+    }
     if (language_code === ":language_code" || !language_code) {
       language_code = "";
       const response = await fetchHelper(slug, language_code);
@@ -98,6 +114,9 @@ export const createHelper: RequestHandler = async (
   req: Request,
   res: Response
 ) => {
+  if (!isCreateAid(req.body)) {
+    return res.status(400).json({ error: "Invalid request body" });
+  }
   let { language_code, slug, text, created_by } = req.body;
   if (!slug || !text || !created_by)
     return res
@@ -106,17 +125,17 @@ export const createHelper: RequestHandler = async (
   if (!language_code || language_code.length < 2) {
     language_code = "EN";
   }
+  const today = new Date(Date.now());
   const newHelp = {
     language_code,
     slug,
     text,
-    created_on: new Date(Date.now()),
+    created_on: today,
     created_by,
-    modified_on: new Date(Date.now()),
+    modified_on: today,
     modified_by: created_by,
   };
   try {
-    // const exists =
     const helper = await knex("help")
       .insert(newHelp)
       .onConflict("slug")
@@ -143,10 +162,15 @@ export const updateHelper: RequestHandler = async (
 ) => {
   let { language_code, text, modified_by } = req.body;
   const { slug } = req.params;
-  if (!slug || !text || !modified_by)
-    return res
-      .status(400)
-      .json({ error: "Input all fields, some fields are missing!" });
+  if (!Object.keys(req.body).length)
+    return res.status(400).json({ error: "No request body found" });
+  if (!isUpdateteAid(req.body)) {
+    return res.status(400).json({
+      error: "Invalid request body, pass in text and modified_by as strings",
+    });
+  }
+  if (!slug || slug === ":slug")
+    return res.status(400).json({ error: "Input slug, slug is missing!" });
   const newHelp = {
     ...req.body,
     modified_on: new Date(Date.now()),
@@ -163,12 +187,11 @@ export const updateHelper: RequestHandler = async (
     }
     return res.status(201).json({
       message: "Success",
-      helper: newHelp,
     });
   } catch (error) {
     return res.status(500).json({
       message:
-        "An error occured while creating resource, please contact support",
+        "An error occured while updating resource, please contact support",
     });
   }
 };
