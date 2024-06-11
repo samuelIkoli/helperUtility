@@ -13,6 +13,14 @@ import {
   isUpdateteAid,
 } from "../interfaces/helpers";
 
+const getResponse = (data: object) => {
+  return {
+    status: "success",
+    message: "Information returned successfully",
+    data,
+  };
+};
+
 export const ping = (req: Request, res: Response) => {
   return res.send("Pinging is working");
 };
@@ -24,11 +32,8 @@ export const getHelpers: RequestHandler = async (
   try {
     const helpers = await knex("help")
       .where("deleted_flag", 0)
-      .select("id", "slug", "text", "language_code");
-    return res.status(200).json({
-      message: "Success",
-      helpers,
-    });
+      .select("id", "slug", "language_code", "text");
+    return res.status(200).json(getResponse(helpers));
   } catch (error) {
     return res.status(500).json({ message: "Error" });
   }
@@ -46,10 +51,7 @@ export const getHelpersByLanguage: RequestHandler = async (
     if (!helpers.length) {
       return res.status(404).json({ error: "Resources not found" });
     }
-    return res.status(200).json({
-      message: "Success",
-      helpers,
-    });
+    return res.status(200).json(getResponse(helpers));
   } catch (error) {
     return res.status(500).json({ message: "Error" });
   }
@@ -70,10 +72,7 @@ export const getHelper: RequestHandler = async (
     if (!helper.length) {
       return res.status(404).json({ error: "Resource not found" });
     }
-    return res.status(200).json({
-      message: "Success",
-      helper,
-    });
+    return res.status(200).json(getResponse(helper));
   } catch (error) {
     return res.status(500).json({ message: "Error" });
   }
@@ -101,10 +100,7 @@ export const getHelperByLanguage: RequestHandler = async (
     if (!helper.length) {
       return res.status(404).json({ error: "Resource not found" });
     }
-    return res.status(200).json({
-      message: "Success",
-      helper,
-    });
+    return res.status(200).json(getResponse(helper));
   } catch (error) {
     return res.status(500).json({ message: "Error" });
   }
