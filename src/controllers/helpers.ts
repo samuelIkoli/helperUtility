@@ -168,7 +168,9 @@ export const updateHelper: RequestHandler = async (
   if (!slug || slug === ":slug")
     return res.status(400).json({ error: "Input slug, slug is missing!" });
   const newHelp = {
-    ...req.body,
+    language_code,
+    text,
+    modified_by,
     modified_on: new Date(Date.now()),
   };
   try {
@@ -176,7 +178,7 @@ export const updateHelper: RequestHandler = async (
     const helper = await knex("help")
       .where({ slug })
       .update(newHelp)
-      .onConflict("slug")
+      .onConflict()
       .ignore();
     if (!helper) {
       return res.status(404).json({ error: "Resource not found" });
@@ -186,8 +188,7 @@ export const updateHelper: RequestHandler = async (
     });
   } catch (error) {
     return res.status(500).json({
-      message:
-        "An error occured while updating resource, please contact support",
+      message: "An error occured while updating resource, most likely ",
     });
   }
 };
