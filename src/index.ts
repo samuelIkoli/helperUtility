@@ -20,6 +20,13 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   next(err);
 });
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  res.status(404).send({
+    error: "Not Found",
+    message: `Cannot ${req.method} ${req.originalUrl}`,
+  });
+});
+
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, world! I am a helper utility function");
 });
