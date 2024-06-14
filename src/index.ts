@@ -10,6 +10,18 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.get("/", (req: Request, res: Response) => {
+  res.send("Hello, world! I am a helper utility function");
+});
+
+app.get("/try", (req: Request, res: Response) => {
+  res.send("A bunch of bananas ate a monkey");
+});
+
+readdirSync("./src/routes").map((path) =>
+  app.use("/", require(`./routes/${path}`))
+);
+
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   if (err.type === "entity.parse.failed") {
     return res.status(400).json({
@@ -26,18 +38,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     message: `Cannot ${req.method} ${req.originalUrl}`,
   });
 });
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, world! I am a helper utility function");
-});
-
-app.get("/try", (req: Request, res: Response) => {
-  res.send("A bunch of bananas ate a monkey");
-});
-
-readdirSync("./src/routes").map((path) =>
-  app.use("/", require(`./routes/${path}`))
-);
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
