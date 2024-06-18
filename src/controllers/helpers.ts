@@ -12,6 +12,7 @@ import {
   updateAid,
   isUpdateteAid,
 } from "../interfaces/helpers";
+import { languageCodes } from "../utils/codes";
 
 const getResponse = (data: object) => {
   return {
@@ -44,7 +45,18 @@ export const getHelpersByLanguage: RequestHandler = async (
   res: Response
 ) => {
   try {
-    const { language_code } = req.params;
+    let { language_code } = req.params;
+    if (language_code === ":language_code" || !language_code) {
+      const helpers = await knex("help")
+        .where("deleted_flag", 0)
+        .select("id", "slug", "language_code", "text");
+      return res.status(200).json(getResponse(helpers));
+    }
+
+    if (!languageCodes.includes(language_code.toLowerCase())) {
+      return res.status(404).json({ error: "Invalid language code" });
+    }
+
     const helpers = await knex("help")
       .where({ deleted_flag: 0, language_code })
       .select("id", "slug", "text", "language_code");
@@ -92,12 +104,18 @@ export const getHelperByLanguage: RequestHandler = async (
     if (language_code === ":language_code" || !language_code) {
       language_code = "";
       const response = await fetchHelper(slug, language_code);
+      if (!response.length) {
+        return res.status(404).json({ error: "Resource not found" });
+      }
       return res.status(200).json({ message: "Success", helper: response });
+    }
+    if (!languageCodes.includes(language_code.toLowerCase())) {
+      return res.status(404).json({ error: "Invalid language code" });
     }
     const helper = await knex("help")
       .where({ slug, deleted_flag: 0, language_code })
       .select("id", "slug", "text", "language_code");
-    if (!helper.length || helper.length == 0) {
+    if (!helper.length) {
       return res.status(404).json({ error: "Resource not found" });
     }
     return res.status(200).json(getResponse(helper));
