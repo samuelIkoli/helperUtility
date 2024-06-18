@@ -54,7 +54,7 @@ export const getHelpersByLanguage: RequestHandler = async (
     }
 
     if (!languageCodes.includes(language_code.toLowerCase())) {
-      return res.status(404).json({ error: "Invalid language code" });
+      return res.status(400).json({ error: "Invalid language code" });
     }
 
     const helpers = await knex("help")
