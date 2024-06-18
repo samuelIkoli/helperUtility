@@ -97,7 +97,7 @@ export const getHelperByLanguage: RequestHandler = async (
     const helper = await knex("help")
       .where({ slug, deleted_flag: 0, language_code })
       .select("id", "slug", "text", "language_code");
-    if (!helper.length) {
+    if (!helper.length || helper.length == 0) {
       return res.status(404).json({ error: "Resource not found" });
     }
     return res.status(200).json(getResponse(helper));
